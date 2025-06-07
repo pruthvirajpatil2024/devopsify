@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Git Checkout') {
             steps {
-               git "https://${GIT_TOKEN}@github.com/vishal-bulbule/devopsify.git"
+               git "https://${GIT_TOKEN}@github.com/pruthvirajpatil2024/devopsify.git"
             }
         }
         
