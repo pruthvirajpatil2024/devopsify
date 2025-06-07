@@ -1,9 +1,9 @@
 pipeline {
     agent any
-
+	
     environment {
-        GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-key')
-        GIT_TOKEN = credentials('git-token')
+        GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-key') // Jenkins secret ID for your GCP JSON key
+        GIT_TOKEN = credentials('git-token') // Jenkins secret for your GitHub PAT
     }
 
     stages {
@@ -13,29 +13,32 @@ pipeline {
             }
         }
 
-        stage('Terraform Init & Plan') {
+        stage('Terraform Init') {
             steps {
-                withCredentials([file(credentialsId: 'gcp-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-                    sh '''
-                        terraform init
-                        terraform plan -out=tfplan
-                    '''
+                withEnv(["TF_VAR_gcp_credentials=${GOOGLE_APPLICATION_CREDENTIALS}"]) {
+                    sh 'terraform init'
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                withEnv(["TF_VAR_gcp_credentials=${GOOGLE_APPLICATION_CREDENTIALS}"]) {
+                    sh 'terraform plan -out=tfplan'
                 }
             }
         }
 
         stage('Manual Approval') {
             steps {
-                input "Approve?"
+                input "Approve to Apply Terraform?"
             }
         }
 
         stage('Terraform Apply') {
             steps {
-                withCredentials([file(credentialsId: 'gcp-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-                    sh '''
-                        terraform apply tfplan
-                    '''
+                withEnv(["TF_VAR_gcp_credentials=${GOOGLE_APPLICATION_CREDENTIALS}"]) {
+                    sh 'terraform apply -auto-approve tfplan'
                 }
             }
         }
