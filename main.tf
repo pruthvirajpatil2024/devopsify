@@ -1,3 +1,9 @@
+provider "google" {
+  credentials = file(var.gcp_credentials)
+  project     = "tt-dev-001"
+  region      = "us-central1"
+}
+
 resource "google_storage_bucket" "my-bucket" {
   name                     = "tt-githubdemo-bucket-001"
   project                  = "tt-dev-001"
