@@ -1,44 +1,40 @@
 pipeline {
     agent any
-	
+
     environment {
-        GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-key')
-	GIT_TOKEN = credentials('git-token')
+        GIT_TOKEN = credentials('git-token')
     }
-	
+
     stages {
         stage('Git Checkout') {
             steps {
-               git "https://${GIT_TOKEN}@github.com/pruthvirajpatil2024/devopsify.git"
+                git "https://${GIT_TOKEN}@github.com/pruthvirajpatil2024/devopsify.git"
             }
         }
-        
-        stage('Terraform Init') {
+
+        stage('Terraform Init & Plan') {
             steps {
-                script {
-                    sh 'terraform init'
-                }
-            }
-        }
-        
-        stage('Terraform Plan') {
-            steps {
-                script {
-                    sh 'terraform plan -out=tfplan'
+                withCredentials([file(credentialsId: 'gcp-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                    sh '''
+                        terraform init
+                        terraform plan -out=tfplan
+                    '''
                 }
             }
         }
 
-	    stage('Manual Approval') {
+        stage('Manual Approval') {
             steps {
                 input "Approve?"
             }
         }
-	    
+
         stage('Terraform Apply') {
             steps {
-                script {
-                    sh 'terraform apply tfplan'
+                withCredentials([file(credentialsId: 'gcp-key', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                    sh '''
+                        terraform apply tfplan
+                    '''
                 }
             }
         }
