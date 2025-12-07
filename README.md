@@ -1,5 +1,4 @@
 
----
 
 # 🚀 Automated CI/CD Pipeline Using Jenkins & Terraform on Google Cloud Platform (GCP)
 
